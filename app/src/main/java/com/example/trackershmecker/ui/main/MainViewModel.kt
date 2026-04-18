@@ -1,11 +1,11 @@
 package com.example.trackershmecker.ui.main
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.data.model.DayEntry
 import com.example.trackershmecker.data.repository.FitnessRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,8 +13,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import javax.inject.Inject
 
-class MainViewModel(private val repository: FitnessRepository) : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repository: FitnessRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -57,11 +61,15 @@ class MainViewModel(private val repository: FitnessRepository) : ViewModel() {
     }
 
     fun onActivityLogged(type: ActivityType) {
-        repository.logActivity(_uiState.value.today, type)
+        viewModelScope.launch {
+            repository.logActivity(_uiState.value.today, type)
+        }
     }
 
     fun onNoteUpdated(date: LocalDate, note: String) {
-        repository.updateNote(date, note)
+        viewModelScope.launch {
+            repository.updateNote(date, note)
+        }
     }
 
     fun ensureMonthVisible(target: YearMonth) {
@@ -126,12 +134,5 @@ class MainViewModel(private val repository: FitnessRepository) : ViewModel() {
             if (type != null && type != ActivityType.DAY_OFF) count++
         }
         return count
-    }
-
-    class Factory(private val repository: FitnessRepository) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-            return MainViewModel(repository) as T
-        }
     }
 }

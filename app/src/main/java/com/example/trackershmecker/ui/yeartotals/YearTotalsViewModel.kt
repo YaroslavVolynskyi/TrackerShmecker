@@ -1,22 +1,29 @@
 package com.example.trackershmecker.ui.yeartotals
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.data.model.DayEntry
 import com.example.trackershmecker.data.repository.FitnessRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.Year
 import java.time.YearMonth
+import javax.inject.Inject
 
-class YearTotalsViewModel(
-    initialYear: Int,
+@HiltViewModel
+class YearTotalsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val repository: FitnessRepository,
 ) : ViewModel() {
+
+    private val initialYear: Int = savedStateHandle.get<Int>("year") ?: LocalDate.now().year
 
     private val _uiState = MutableStateFlow(YearTotalsUiState(year = initialYear))
     val uiState: StateFlow<YearTotalsUiState> = _uiState.asStateFlow()
@@ -56,7 +63,7 @@ class YearTotalsViewModel(
         }
     }
 
-    private fun computeState(entries: Map<java.time.LocalDate, DayEntry>) {
+    private fun computeState(entries: Map<LocalDate, DayEntry>) {
         val year = _uiState.value.year
 
         val yearEntries = entries.values.filter { it.date.year == year && it.activityType != null }
@@ -79,10 +86,10 @@ class YearTotalsViewModel(
             MonthSummary(ym, workoutCount, dayActivities)
         }
 
-        val totalDays = if (year == java.time.LocalDate.now().year) {
-            java.time.LocalDate.now().dayOfYear
+        val totalDays = if (year == LocalDate.now().year) {
+            LocalDate.now().dayOfYear
         } else {
-            if (java.time.Year.of(year).isLeap) 366 else 365
+            if (Year.of(year).isLeap) 366 else 365
         }
         val activeDays = yearEntries.size
         val pct = if (totalDays > 0) (activeDays * 100) / totalDays else 0
@@ -95,13 +102,6 @@ class YearTotalsViewModel(
                 monthSummaries = monthSummaries,
                 activeDaysPercent = pct,
             )
-        }
-    }
-
-    class Factory(private val year: Int, private val repository: FitnessRepository) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return YearTotalsViewModel(year, repository) as T
         }
     }
 }

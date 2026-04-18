@@ -20,19 +20,19 @@ class InMemoryFitnessRepository : FitnessRepository {
 
     override fun getEntries(): Flow<Map<LocalDate, DayEntry>> = _entriesFlow.asStateFlow()
 
-    override fun logActivity(date: LocalDate, type: ActivityType) {
+    override suspend fun logActivity(date: LocalDate, type: ActivityType) {
         val existing = allEntries[date]
         allEntries[date] = DayEntry(date = date, activityType = type, note = existing?.note)
         _entriesFlow.value = allEntries.toMap()
     }
 
-    override fun updateNote(date: LocalDate, note: String) {
+    override suspend fun updateNote(date: LocalDate, note: String) {
         val existing = allEntries[date]
         allEntries[date] = (existing ?: DayEntry(date = date)).copy(note = note.ifBlank { null })
         _entriesFlow.value = allEntries.toMap()
     }
 
-    override fun getYearTotals(year: Int): Map<ActivityType, Int> {
+    override suspend fun getYearTotals(year: Int): Map<ActivityType, Int> {
         val counts = mutableMapOf<ActivityType, Int>()
         ActivityType.entries.forEach { counts[it] = 0 }
         allEntries.values

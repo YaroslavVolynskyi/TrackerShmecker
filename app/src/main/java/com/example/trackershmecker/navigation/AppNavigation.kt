@@ -1,15 +1,12 @@
 package com.example.trackershmecker.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.trackershmecker.data.repository.FitnessRepository
-import com.example.trackershmecker.data.repository.InMemoryFitnessRepository
 import com.example.trackershmecker.ui.main.MainScreen
 import com.example.trackershmecker.ui.main.MainViewModel
 import com.example.trackershmecker.ui.yeartotals.YearTotalsScreen
@@ -19,15 +16,11 @@ import java.time.YearMonth
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val repository: FitnessRepository = remember { InMemoryFitnessRepository() }
 
     NavHost(navController = navController, startDestination = "main") {
         composable("main") { backStackEntry ->
-            val mainViewModel: MainViewModel = viewModel(
-                factory = MainViewModel.Factory(repository),
-            )
+            val mainViewModel: MainViewModel = hiltViewModel()
 
-            // Check if we're returning from year totals with a target month
             val savedStateHandle = backStackEntry.savedStateHandle
             val targetYear = savedStateHandle.get<Int>("targetYear")
             val targetMonthVal = savedStateHandle.get<Int>("targetMonth")
@@ -51,11 +44,8 @@ fun AppNavigation() {
         composable(
             route = "yearTotals/{year}",
             arguments = listOf(navArgument("year") { type = NavType.IntType }),
-        ) { backStackEntry ->
-            val year = backStackEntry.arguments?.getInt("year") ?: 2026
-            val yearTotalsViewModel: YearTotalsViewModel = viewModel(
-                factory = YearTotalsViewModel.Factory(year, repository),
-            )
+        ) {
+            val yearTotalsViewModel: YearTotalsViewModel = hiltViewModel()
             YearTotalsScreen(
                 viewModel = yearTotalsViewModel,
                 onBack = { navController.popBackStack() },

@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,7 @@ fun ActivityButtonBar(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .height(72.dp)
+                    .height(88.dp)
                     .graphicsLayer(scaleX = scale.value, scaleY = scale.value)
                     .background(activity.buttonBg, RoundedCornerShape(16.dp))
                     .border(1.dp, activity.buttonBorder, RoundedCornerShape(16.dp))

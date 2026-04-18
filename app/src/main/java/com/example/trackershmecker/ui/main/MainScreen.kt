@@ -245,6 +245,7 @@ fun MainScreen(
             }
             val todayActivities = state.entries[state.today]?.activityTypes
                 ?.toSet()
+                ?.ifEmpty { setOf(ActivityType.DAY_OFF) }
                 ?: setOf(ActivityType.DAY_OFF)
             ActivityButtonBar(
                 counts = state.monthCounts,

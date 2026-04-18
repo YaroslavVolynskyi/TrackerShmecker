@@ -55,7 +55,7 @@ fun ActivityButtonBar(
                     .background(activity.buttonBg, RoundedCornerShape(16.dp))
                     .border(
                         width = if (isSelected) 3.dp else 1.dp,
-                        color = if (isSelected) activity.cellColor else activity.buttonBorder,
+                        color = if (isSelected) activity.borderColor else activity.buttonBorder,
                         shape = RoundedCornerShape(16.dp),
                     )
                     .combinedClickable(

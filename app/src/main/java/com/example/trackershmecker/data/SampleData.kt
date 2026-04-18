@@ -234,7 +234,7 @@ object SampleData {
         ),
         "2026-4" to mapOf(
             4 to GYM, 6 to GYM, 7 to GYM, 9 to GYM, 12 to GYM, 13 to GYM,
-            14 to GYM, 18 to GYM,
+            14 to GYM,
             1 to DAY_OFF, 2 to DAY_OFF, 3 to DAY_OFF, 5 to DAY_OFF,
             8 to DAY_OFF, 10 to DAY_OFF, 11 to DAY_OFF, 15 to DAY_OFF,
             16 to DAY_OFF, 17 to DAY_OFF,

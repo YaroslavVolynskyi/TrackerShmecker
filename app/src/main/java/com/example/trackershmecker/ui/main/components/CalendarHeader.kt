@@ -69,12 +69,12 @@ fun CalendarHeader(
                     )
                     Text(
                         text = activity.label,
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         color = TextPrimary,
                     )
                     Text(
                         text = (yearTotals[activity] ?: 0).toString(),
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextSecondary,
                     )

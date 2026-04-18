@@ -53,6 +53,10 @@ fun DayCell(
         activityTypes.isEmpty() -> TextMuted
         else -> activityTypes.first().cellFg
     }
+    val borderColor = when {
+        activityTypes.isEmpty() -> TodayRing
+        else -> activityTypes.first().borderColor
+    }
 
     Box(
         modifier = modifier
@@ -67,7 +71,7 @@ fun DayCell(
                         style = Stroke(width = 4.dp.toPx()),
                     )
                     drawRoundRect(
-                        color = TodayRing,
+                        color = borderColor,
                         topLeft = Offset(-2.dp.toPx(), -2.dp.toPx()),
                         size = Size(size.width + 4.dp.toPx(), size.height + 4.dp.toPx()),
                         cornerRadius = CornerRadius(11.dp.toPx()),

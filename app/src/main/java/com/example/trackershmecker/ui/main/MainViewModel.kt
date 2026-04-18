@@ -29,7 +29,14 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(months = months, today = today, activeMonth = YearMonth.from(today)) }
 
         viewModelScope.launch {
+            var seededToday = false
             repository.getEntries().collect { entries ->
+                if (!seededToday && entries[today] == null) {
+                    seededToday = true
+                    repository.logActivity(today, ActivityType.DAY_OFF)
+                    return@collect
+                }
+                seededToday = true
                 _uiState.update { state ->
                     state.copy(
                         entries = entries,

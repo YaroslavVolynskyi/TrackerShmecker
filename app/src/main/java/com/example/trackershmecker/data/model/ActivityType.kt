@@ -11,6 +11,7 @@ enum class ActivityType(
     val buttonFg: Color,
     val buttonBorder: Color,
     val dotColor: Color = cellColor,
+    val borderColor: Color = buttonBorder
 ) {
     GYM(
         label = "gym",
@@ -47,6 +48,7 @@ enum class ActivityType(
         buttonBg = Color(0x73D4AAA0),
         buttonFg = Color(0xFF6B3A30),
         buttonBorder = Color(0x99D4AAA0),
-        dotColor = Color(0x8CB08070)
+        dotColor = Color(0x8CB08070),
+        borderColor = Color(0xFF6B3A30)
     );
 }

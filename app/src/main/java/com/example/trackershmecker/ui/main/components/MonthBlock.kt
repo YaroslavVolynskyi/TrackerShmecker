@@ -117,12 +117,12 @@ fun MonthBlock(
                         )
                         Text(
                             text = activity.label,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             color = TextMuted,
                         )
                         Text(
                             text = count.toString(),
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary,
                         )

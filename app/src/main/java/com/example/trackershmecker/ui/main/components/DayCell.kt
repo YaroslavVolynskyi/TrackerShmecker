@@ -16,14 +16,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackershmecker.data.model.ActivityType
@@ -32,11 +34,14 @@ import com.example.trackershmecker.ui.theme.EmptyCell
 import com.example.trackershmecker.ui.theme.SelectedRing
 import com.example.trackershmecker.ui.theme.TextMuted
 import com.example.trackershmecker.ui.theme.TodayRing
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.sin
 
 @Composable
 fun DayCell(
     day: Int,
-    activityType: ActivityType?,
+    activityTypes: List<ActivityType>,
     isToday: Boolean,
     isSelected: Boolean,
     hasNote: Boolean,
@@ -44,15 +49,16 @@ fun DayCell(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bgColor = activityType?.cellColor ?: EmptyCell
-    val fgColor = activityType?.cellFg ?: TextMuted
+    val fgColor = when {
+        activityTypes.isEmpty() -> TextMuted
+        else -> activityTypes.first().cellFg
+    }
 
     Box(
         modifier = modifier
             .aspectRatio(1f / 1.15f)
             .drawBehind {
                 if (isToday) {
-                    // Outer ring in background color (gap)
                     drawRoundRect(
                         color = Background,
                         topLeft = Offset(-4.dp.toPx(), -4.dp.toPx()),
@@ -60,7 +66,6 @@ fun DayCell(
                         cornerRadius = CornerRadius(12.dp.toPx()),
                         style = Stroke(width = 4.dp.toPx()),
                     )
-                    // Inner ring in dark color
                     drawRoundRect(
                         color = TodayRing,
                         topLeft = Offset(-2.dp.toPx(), -2.dp.toPx()),
@@ -85,7 +90,10 @@ fun DayCell(
                     )
                 }
             }
-            .background(bgColor, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .drawBehind {
+                drawMultiActivityBackground(activityTypes)
+            }
             .clickable { onClick() }
             .padding(horizontal = 4.dp, vertical = 5.dp),
     ) {
@@ -106,7 +114,7 @@ fun DayCell(
                         modifier = Modifier
                             .size(4.dp)
                             .background(
-                                if (activityType != null) Color.White.copy(alpha = 0.9f)
+                                if (activityTypes.isNotEmpty()) Color.White.copy(alpha = 0.9f)
                                 else Color(0xFF4A4032),
                                 CircleShape,
                             ),
@@ -114,15 +122,58 @@ fun DayCell(
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            if (activityType != null) {
+            if (activityTypes.size == 1) {
                 Text(
-                    text = activityType.label.uppercase(),
+                    text = activityTypes.first().label.uppercase(),
                     fontSize = 8.5.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = fgColor.copy(alpha = 0.95f),
                     letterSpacing = 0.3.sp,
                     lineHeight = 8.5.sp,
                 )
+            }
+        }
+    }
+}
+
+private fun DrawScope.drawMultiActivityBackground(activityTypes: List<ActivityType>) {
+    when (activityTypes.size) {
+        0 -> drawRect(EmptyCell)
+        1 -> drawRect(activityTypes[0].cellColor)
+        2 -> {
+            // Diagonal split: top-left = first, bottom-right = second
+            drawRect(activityTypes[0].cellColor)
+            val path = Path().apply {
+                moveTo(size.width, 0f)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
+            }
+            drawPath(path, activityTypes[1].cellColor)
+        }
+        else -> {
+            // Mercedes/Y split: 3 sectors at 120° each
+            val cx = size.width / 2
+            val cy = size.height / 2
+            val r = max(size.width, size.height) * 2
+
+            for (i in 0 until minOf(3, activityTypes.size)) {
+                val startAngle = i * 2.0 * Math.PI / 3.0
+                val endAngle = (i + 1) * 2.0 * Math.PI / 3.0
+
+                val path = Path().apply {
+                    moveTo(cx, cy)
+                    val steps = 12
+                    for (s in 0..steps) {
+                        val angle = startAngle + (endAngle - startAngle) * s / steps
+                        lineTo(
+                            cx + (r * sin(angle)).toFloat(),
+                            cy - (r * cos(angle)).toFloat(),
+                        )
+                    }
+                    close()
+                }
+                drawPath(path, activityTypes[i].cellColor)
             }
         }
     }

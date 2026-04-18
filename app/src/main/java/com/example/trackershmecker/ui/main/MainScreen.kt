@@ -170,7 +170,7 @@ fun MainScreen(
                 val entry = state.entries[date]
                 DayNoteCard(
                     date = date,
-                    activityType = entry?.activityType,
+                    activityTypes = entry?.activityTypes ?: emptyList(),
                     existingNote = entry?.note,
                     onSaveNote = { note -> viewModel.onNoteUpdated(date, note) },
                     onDismiss = { viewModel.onDaySelected(null) },
@@ -243,11 +243,14 @@ fun MainScreen(
                     last10Active = state.last10Active,
                 )
             }
-            val todayActivity = state.entries[state.today]?.activityType ?: ActivityType.DAY_OFF
+            val todayActivities = state.entries[state.today]?.activityTypes
+                ?.toSet()
+                ?: setOf(ActivityType.DAY_OFF)
             ActivityButtonBar(
                 counts = state.monthCounts,
-                selectedActivity = todayActivity,
+                selectedActivities = todayActivities,
                 onActivityClick = { viewModel.onActivityLogged(it) },
+                onActivityLongClick = { viewModel.onActivityAdded(it) },
             )
         }
     }

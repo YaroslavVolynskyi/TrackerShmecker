@@ -258,12 +258,12 @@ private fun MiniMonthCard(
                     for (col in 0 until 7) {
                         val d = dayCounter + col
                         if (d in 1..daysInMonth) {
-                            val act = summary.dayActivities[d]
+                            val acts = summary.dayActivities[d] ?: emptyList()
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .background(
-                                        act?.cellColor ?: EmptyCell,
+                                        acts.firstOrNull()?.cellColor ?: EmptyCell,
                                         RoundedCornerShape(2.dp),
                                     )
                                     .then(

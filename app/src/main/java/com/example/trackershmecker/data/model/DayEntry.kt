@@ -4,6 +4,6 @@ import java.time.LocalDate
 
 data class DayEntry(
     val date: LocalDate,
-    val activityType: ActivityType? = null,
+    val activityTypes: List<ActivityType> = emptyList(),
     val note: String? = null,
 )

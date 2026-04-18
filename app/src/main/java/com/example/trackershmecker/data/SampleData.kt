@@ -258,7 +258,7 @@ object SampleData {
                 val date = LocalDate.of(y, m, d)
                 entries[date] = DayEntry(
                     date = date,
-                    activityType = type,
+                    activityTypes = listOf(type),
                     note = NOTES[date],
                 )
             }

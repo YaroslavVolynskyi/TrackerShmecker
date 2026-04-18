@@ -70,10 +70,14 @@ fun MonthBlock(
             .padding(vertical = 16.dp),
     ) {
         // Month title with activity counts
-        val monthCounts = entries.values
-            .filter { YearMonth.from(it.date) == yearMonth && it.activityType != null }
-            .groupingBy { it.activityType!! }
-            .eachCount()
+        val monthCounts = mutableMapOf<ActivityType, Int>()
+        entries.values
+            .filter { YearMonth.from(it.date) == yearMonth }
+            .forEach { entry ->
+                entry.activityTypes.forEach { type ->
+                    monthCounts[type] = (monthCounts[type] ?: 0) + 1
+                }
+            }
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -145,7 +149,7 @@ fun MonthBlock(
                             val entry = entries[date]
                             DayCell(
                                 day = day,
-                                activityType = entry?.activityType,
+                                activityTypes = entry?.activityTypes ?: emptyList(),
                                 isToday = date == today,
                                 isSelected = date == selectedDate,
                                 hasNote = entry?.note != null,

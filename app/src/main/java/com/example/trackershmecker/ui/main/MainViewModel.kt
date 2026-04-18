@@ -66,6 +66,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onActivityAdded(type: ActivityType) {
+        if (type == ActivityType.DAY_OFF) return
+        viewModelScope.launch {
+            repository.addActivity(_uiState.value.today, type)
+        }
+    }
+
     fun onNoteUpdated(date: LocalDate, note: String) {
         viewModelScope.launch {
             repository.updateNote(date, note)
@@ -97,16 +104,24 @@ class MainViewModel @Inject constructor(
     private fun computeYearTotals(entries: Map<LocalDate, DayEntry>, year: Int): Map<ActivityType, Int> {
         val counts = ActivityType.entries.associateWith { 0 }.toMutableMap()
         entries.values
-            .filter { it.date.year == year && it.activityType != null }
-            .forEach { counts[it.activityType!!] = (counts[it.activityType] ?: 0) + 1 }
+            .filter { it.date.year == year }
+            .forEach { entry ->
+                entry.activityTypes.forEach { type ->
+                    counts[type] = (counts[type] ?: 0) + 1
+                }
+            }
         return counts
     }
 
     private fun computeMonthCounts(entries: Map<LocalDate, DayEntry>, month: YearMonth): Map<ActivityType, Int> {
         val counts = ActivityType.entries.associateWith { 0 }.toMutableMap()
         entries.values
-            .filter { YearMonth.from(it.date) == month && it.activityType != null }
-            .forEach { counts[it.activityType!!] = (counts[it.activityType] ?: 0) + 1 }
+            .filter { YearMonth.from(it.date) == month }
+            .forEach { entry ->
+                entry.activityTypes.forEach { type ->
+                    counts[type] = (counts[type] ?: 0) + 1
+                }
+            }
         return counts
     }
 
@@ -115,8 +130,8 @@ class MainViewModel @Inject constructor(
         var date = today
         while (true) {
             val entry = entries[date]
-            val type = entry?.activityType
-            if (type != null && type != ActivityType.DAY_OFF) {
+            val hasWorkout = entry?.activityTypes?.any { it != ActivityType.DAY_OFF } == true
+            if (hasWorkout) {
                 streak++
                 date = date.minusDays(1)
             } else {
@@ -130,8 +145,8 @@ class MainViewModel @Inject constructor(
         var count = 0
         for (i in 0 until 10) {
             val date = today.minusDays(i.toLong())
-            val type = entries[date]?.activityType
-            if (type != null && type != ActivityType.DAY_OFF) count++
+            val hasWorkout = entries[date]?.activityTypes?.any { it != ActivityType.DAY_OFF } == true
+            if (hasWorkout) count++
         }
         return count
     }

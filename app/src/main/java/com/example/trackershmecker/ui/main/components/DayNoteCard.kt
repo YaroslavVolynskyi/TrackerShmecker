@@ -45,7 +45,7 @@ import java.util.Locale
 @Composable
 fun DayNoteCard(
     date: LocalDate,
-    activityType: ActivityType?,
+    activityTypes: List<ActivityType>,
     existingNote: String?,
     onSaveNote: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -81,15 +81,15 @@ fun DayNoteCard(
                         fontWeight = FontWeight.SemiBold,
                         color = TextPrimary,
                     )
-                    if (activityType != null) {
+                    activityTypes.forEach { type ->
                         Text(
-                            text = activityType.label.uppercase(),
+                            text = type.label.uppercase(),
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 0.3.sp,
-                            color = activityType.cellFg,
+                            color = type.cellFg,
                             modifier = Modifier
-                                .background(activityType.cellColor, RoundedCornerShape(6.dp))
+                                .background(type.cellColor, RoundedCornerShape(6.dp))
                                 .padding(horizontal = 7.dp, vertical = 3.dp),
                         )
                     }

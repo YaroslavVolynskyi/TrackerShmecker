@@ -11,7 +11,11 @@ class SeedDatabaseCallback : RoomDatabase.Callback() {
         allEntries.values.forEach { entry ->
             db.execSQL(
                 "INSERT OR REPLACE INTO day_entries (date, activityType, note) VALUES (?, ?, ?)",
-                arrayOf(entry.date.toString(), entry.activityType?.name, entry.note),
+                arrayOf(
+                    entry.date.toString(),
+                    entry.activityTypes.joinToString(",") { it.name }.ifEmpty { null },
+                    entry.note,
+                ),
             )
         }
     }

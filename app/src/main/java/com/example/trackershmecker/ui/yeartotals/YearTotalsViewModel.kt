@@ -66,23 +66,22 @@ class YearTotalsViewModel @Inject constructor(
     private fun computeState(entries: Map<LocalDate, DayEntry>) {
         val year = _uiState.value.year
 
-        val yearEntries = entries.values.filter { it.date.year == year && it.activityType != null }
-        val prevYearEntries = entries.values.filter { it.date.year == year - 1 && it.activityType != null }
+        val yearEntries = entries.values.filter { it.date.year == year && it.activityTypes.isNotEmpty() }
+        val prevYearEntries = entries.values.filter { it.date.year == year - 1 && it.activityTypes.isNotEmpty() }
 
-        val totalWorkouts = yearEntries.count { it.activityType != ActivityType.DAY_OFF }
-        val prevWorkouts = prevYearEntries.count { it.activityType != ActivityType.DAY_OFF }
+        val totalWorkouts = yearEntries.count { entry -> entry.activityTypes.any { it != ActivityType.DAY_OFF } }
+        val prevWorkouts = prevYearEntries.count { entry -> entry.activityTypes.any { it != ActivityType.DAY_OFF } }
 
         val activityCounts = ActivityType.entries.associateWith { type ->
-            yearEntries.count { it.activityType == type }
+            yearEntries.count { it.activityTypes.contains(type) }
         }
 
         val monthSummaries = (1..12).map { m ->
             val ym = YearMonth.of(year, m)
             val monthEntries = yearEntries.filter { it.date.monthValue == m }
-            val workoutCount = monthEntries.count { it.activityType != ActivityType.DAY_OFF }
+            val workoutCount = monthEntries.count { entry -> entry.activityTypes.any { it != ActivityType.DAY_OFF } }
             val dayActivities = monthEntries
-                .filter { it.activityType != null }
-                .associate { it.date.dayOfMonth to it.activityType!! }
+                .associate { it.date.dayOfMonth to it.activityTypes }
             MonthSummary(ym, workoutCount, dayActivities)
         }
 

@@ -19,7 +19,7 @@ class RoomFitnessRepository @Inject constructor(
                 val date = LocalDate.parse(entity.date)
                 date to DayEntry(
                     date = date,
-                    activityType = entity.activityType?.let { ActivityType.valueOf(it) },
+                    activityTypes = parseTypes(entity.activityType),
                     note = entity.note,
                 )
             }
@@ -32,6 +32,26 @@ class RoomFitnessRepository @Inject constructor(
             DayEntryEntity(
                 date = date.toString(),
                 activityType = type.name,
+                note = existing?.note,
+            )
+        )
+    }
+
+    override suspend fun addActivity(date: LocalDate, type: ActivityType) {
+        val existing = dao.getByDate(date.toString())
+        val currentTypes = existing?.activityType
+            ?.split(",")
+            ?.toMutableList()
+            ?: mutableListOf()
+        if (currentTypes.contains(type.name)) {
+            currentTypes.remove(type.name)
+        } else {
+            currentTypes.add(type.name)
+        }
+        dao.upsert(
+            DayEntryEntity(
+                date = date.toString(),
+                activityType = currentTypes.joinToString(",").ifEmpty { null },
                 note = existing?.note,
             )
         )
@@ -53,11 +73,15 @@ class RoomFitnessRepository @Inject constructor(
         val entities = dao.getByYear(year.toString())
         val counts = ActivityType.entries.associateWith { 0 }.toMutableMap()
         entities.forEach { entity ->
-            entity.activityType?.let { typeName ->
-                val type = ActivityType.valueOf(typeName)
+            parseTypes(entity.activityType).forEach { type ->
                 counts[type] = (counts[type] ?: 0) + 1
             }
         }
         return counts
+    }
+
+    private fun parseTypes(value: String?): List<ActivityType> {
+        if (value.isNullOrBlank()) return emptyList()
+        return value.split(",").map { ActivityType.valueOf(it) }
     }
 }

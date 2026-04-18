@@ -15,5 +15,5 @@ data class YearTotalsUiState(
 data class MonthSummary(
     val yearMonth: YearMonth,
     val workoutCount: Int,
-    val dayActivities: Map<Int, ActivityType>,
+    val dayActivities: Map<Int, List<ActivityType>>,
 )

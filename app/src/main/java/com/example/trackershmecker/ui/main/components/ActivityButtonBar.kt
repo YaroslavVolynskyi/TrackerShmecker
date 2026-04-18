@@ -2,9 +2,10 @@ package com.example.trackershmecker.ui.main.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,11 +27,13 @@ import androidx.compose.ui.unit.sp
 import com.example.trackershmecker.data.model.ActivityType
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ActivityButtonBar(
     counts: Map<ActivityType, Int>,
-    selectedActivity: ActivityType? = null,
+    selectedActivities: Set<ActivityType> = emptySet(),
     onActivityClick: (ActivityType) -> Unit,
+    onActivityLongClick: (ActivityType) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -43,7 +45,7 @@ fun ActivityButtonBar(
         ActivityType.entries.forEach { activity ->
             val scale = remember { Animatable(1f) }
             val scope = rememberCoroutineScope()
-            val isSelected = activity == selectedActivity
+            val isSelected = activity in selectedActivities
 
             Column(
                 modifier = Modifier
@@ -56,16 +58,24 @@ fun ActivityButtonBar(
                         color = if (isSelected) activity.cellColor else activity.buttonBorder,
                         shape = RoundedCornerShape(16.dp),
                     )
-                    .clickable(
+                    .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                    ) {
-                        scope.launch {
-                            scale.animateTo(0.96f, spring(dampingRatio = 0.5f, stiffness = 800f))
-                            scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 400f))
-                        }
-                        onActivityClick(activity)
-                    }
+                        onClick = {
+                            scope.launch {
+                                scale.animateTo(0.96f, spring(dampingRatio = 0.5f, stiffness = 800f))
+                                scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 400f))
+                            }
+                            onActivityClick(activity)
+                        },
+                        onLongClick = {
+                            scope.launch {
+                                scale.animateTo(0.93f, spring(dampingRatio = 0.5f, stiffness = 800f))
+                                scale.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 400f))
+                            }
+                            onActivityLongClick(activity)
+                        },
+                    )
                     .padding(vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,

@@ -25,7 +25,7 @@ class MainViewModel @Inject constructor(
 
     init {
         val today = LocalDate.now()
-        val months = buildMonthList(YearMonth.of(2025, 11), YearMonth.from(today))
+        val months = buildMonthList(YearMonth.of(2024, 1), YearMonth.from(today))
         _uiState.update { it.copy(months = months, today = today, activeMonth = YearMonth.from(today)) }
 
         viewModelScope.launch {

@@ -19,14 +19,22 @@ import androidx.compose.ui.unit.sp
 import com.example.trackershmecker.ui.theme.Background
 import com.example.trackershmecker.ui.theme.Divider
 import com.example.trackershmecker.ui.theme.TextMuted
+import com.example.trackershmecker.ui.theme.SelectedRing
 import com.example.trackershmecker.ui.theme.TodayRing
 import androidx.compose.foundation.layout.Column
 import java.time.DayOfWeek
 import java.time.LocalDate
 
 @Composable
-fun WeekdayRow(today: LocalDate = LocalDate.now(), modifier: Modifier = Modifier) {
+fun WeekdayRow(
+    today: LocalDate = LocalDate.now(),
+    selectedDate: LocalDate? = null,
+    modifier: Modifier = Modifier,
+) {
     val todayDowIndex = (today.dayOfWeek.value - DayOfWeek.MONDAY.value + 7) % 7
+    val selectedDowIndex = selectedDate?.let {
+        (it.dayOfWeek.value - DayOfWeek.MONDAY.value + 7) % 7
+    }
 
     Column(modifier = modifier.background(Background)) {
         Row(
@@ -37,6 +45,7 @@ fun WeekdayRow(today: LocalDate = LocalDate.now(), modifier: Modifier = Modifier
             val days = listOf("M", "T", "W", "T", "F", "S", "S")
             days.forEachIndexed { index, day ->
                 val isTodayDow = index == todayDowIndex
+                val isSelectedDow = selectedDowIndex == index && !isTodayDow
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center,
@@ -47,13 +56,23 @@ fun WeekdayRow(today: LocalDate = LocalDate.now(), modifier: Modifier = Modifier
                                 .size(20.dp)
                                 .background(TodayRing, CircleShape),
                         )
+                    } else if (isSelectedDow) {
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .background(SelectedRing, CircleShape),
+                        )
                     }
                     Text(
                         text = day,
                         textAlign = TextAlign.Center,
                         fontSize = 11.sp,
-                        fontWeight = if (isTodayDow) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isTodayDow) Background else TextMuted,
+                        fontWeight = if (isTodayDow || isSelectedDow) FontWeight.Bold else FontWeight.Medium,
+                        color = when {
+                            isTodayDow -> Background
+                            isSelectedDow -> Background
+                            else -> TextMuted
+                        },
                     )
                 }
             }

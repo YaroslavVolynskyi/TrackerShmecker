@@ -14,15 +14,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +38,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.ui.main.components.ActivityButtonBar
 import com.example.trackershmecker.ui.main.components.CalendarHeader
 import com.example.trackershmecker.ui.main.components.DayNoteCard
@@ -47,6 +57,17 @@ fun MainScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    val currentMonthIndex = remember(state.months) {
+        state.months.indexOf(YearMonth.from(state.today))
+    }
+    val isAwayFromCurrentMonth by remember {
+        derivedStateOf {
+            if (currentMonthIndex < 0) false
+            else state.activeMonth != YearMonth.from(state.today)
+        }
+    }
 
     // Ensure target month is in the list and scroll to it
     LaunchedEffect(targetMonth) {
@@ -107,7 +128,7 @@ fun MainScreen(
             )
 
             // Fixed weekday row
-            WeekdayRow()
+            WeekdayRow(selectedDate = state.selectedDate)
 
             // Scrollable month stack
             LazyColumn(
@@ -142,7 +163,7 @@ fun MainScreen(
             exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 108.dp)
+                .padding(bottom = 180.dp)
                 .navigationBarsPadding(),
         ) {
             state.selectedDate?.let { date ->
@@ -153,6 +174,37 @@ fun MainScreen(
                     existingNote = entry?.note,
                     onSaveNote = { note -> viewModel.onNoteUpdated(date, note) },
                     onDismiss = { viewModel.onDaySelected(null) },
+                )
+            }
+        }
+
+        // Scroll to current month FAB
+        AnimatedVisibility(
+            visible = isAwayFromCurrentMonth,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 200.dp)
+                .navigationBarsPadding(),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(Color(0x997B1FA2), CircleShape)
+                    .clickable {
+                        if (currentMonthIndex >= 0) {
+                            scope.launch {
+                                listState.animateScrollToItem(currentMonthIndex)
+                            }
+                        }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "↓",
+                    color = Color.White,
+                    fontSize = 22.sp,
                 )
             }
         }
@@ -191,8 +243,10 @@ fun MainScreen(
                     last10Active = state.last10Active,
                 )
             }
+            val todayActivity = state.entries[state.today]?.activityType ?: ActivityType.DAY_OFF
             ActivityButtonBar(
                 counts = state.monthCounts,
+                selectedActivity = todayActivity,
                 onActivityClick = { viewModel.onActivityLogged(it) },
             )
         }

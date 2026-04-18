@@ -86,7 +86,7 @@ fun DayCell(
                 }
             }
             .background(bgColor, RoundedCornerShape(10.dp))
-            .clickable(enabled = isActive) { onClick() }
+            .clickable { onClick() }
             .padding(horizontal = 4.dp, vertical = 5.dp),
     ) {
         Column(modifier = Modifier.matchParentSize()) {

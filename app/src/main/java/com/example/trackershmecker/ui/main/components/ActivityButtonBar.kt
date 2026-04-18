@@ -83,14 +83,14 @@ fun ActivityButtonBar(
                 Text(text = activity.emoji, fontSize = 18.sp, lineHeight = 18.sp)
                 Text(
                     text = activity.label,
-                    fontSize = 10.5.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = activity.buttonFg,
                     letterSpacing = 0.1.sp,
                 )
                 Text(
                     text = (counts[activity] ?: 0).toString(),
-                    fontSize = 18.sp,
+                    fontSize = 19.sp,
                     fontWeight = FontWeight.Bold,
                     color = activity.buttonFg,
                     letterSpacing = (-0.3).sp,

@@ -33,16 +33,16 @@ fun StreakLine(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(text = "\uD83D\uDD25", fontSize = 13.sp)
+            Text(text = "\uD83D\uDD25", fontSize = 17.sp)
             Text(
                 text = "$streakCount",
-                fontSize = 12.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextSecondary,
             )
             Text(
                 text = "day streak",
-                fontSize = 12.sp,
+                fontSize = 16.sp,
                 color = TextSecondary,
             )
         }
@@ -50,7 +50,7 @@ fun StreakLine(
         Box(
             modifier = Modifier
                 .width(1.dp)
-                .height(14.dp)
+                .height(18.dp)
                 .background(Divider),
         )
 
@@ -60,13 +60,13 @@ fun StreakLine(
         ) {
             Text(
                 text = "$last10Active/10",
-                fontSize = 12.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextSecondary,
             )
             Text(
                 text = "last 10 days",
-                fontSize = 12.sp,
+                fontSize = 16.sp,
                 color = TextMuted,
             )
         }

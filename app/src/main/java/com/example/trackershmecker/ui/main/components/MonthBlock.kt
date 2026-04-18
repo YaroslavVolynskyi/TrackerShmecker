@@ -112,17 +112,17 @@ fun MonthBlock(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
-                                .background(activity.cellColor, CircleShape),
+                                .size(10.dp)
+                                .background(activity.dotColor, CircleShape),
                         )
                         Text(
                             text = activity.label,
-                            fontSize = 10.5.sp,
+                            fontSize = 16.sp,
                             color = TextMuted,
                         )
                         Text(
                             text = count.toString(),
-                            fontSize = 10.5.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary,
                         )

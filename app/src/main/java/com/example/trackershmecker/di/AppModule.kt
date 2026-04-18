@@ -33,6 +33,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "tracker_shmecker.db",
         ).addCallback(SeedDatabaseCallback())
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 

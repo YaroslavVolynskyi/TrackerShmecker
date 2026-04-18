@@ -7,7 +7,7 @@ import com.example.trackershmecker.data.SampleData
 class SeedDatabaseCallback : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
-        val allEntries = SampleData.generate2025Data() + SampleData.generateSampleEntries()
+        val allEntries = SampleData.generateEntries()
         allEntries.values.forEach { entry ->
             db.execSQL(
                 "INSERT OR REPLACE INTO day_entries (date, activityType, note) VALUES (?, ?, ?)",

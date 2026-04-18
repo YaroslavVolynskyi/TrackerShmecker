@@ -12,8 +12,7 @@ import java.time.LocalDate
 class InMemoryFitnessRepository : FitnessRepository {
 
     private val allEntries = mutableMapOf<LocalDate, DayEntry>().apply {
-        putAll(SampleData.generate2025Data())
-        putAll(SampleData.generateSampleEntries())
+        putAll(SampleData.generateEntries())
     }
 
     private val _entriesFlow = MutableStateFlow(allEntries.toMap())

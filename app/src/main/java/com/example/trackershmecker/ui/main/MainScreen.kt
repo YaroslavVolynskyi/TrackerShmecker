@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -129,7 +130,7 @@ fun MainScreen(
                 }
                 // Bottom spacer so content doesn't hide behind buttons + streak line
                 item {
-                    Spacer(modifier = Modifier.height(170.dp))
+                    Spacer(modifier = Modifier.height(180.dp))
                 }
             }
         }
@@ -176,9 +177,7 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
                 .navigationBarsPadding()
-                .padding(horizontal = 8.dp)
                 .background(
                     Color(0x337B1FA2),
                     RoundedCornerShape(20.dp),

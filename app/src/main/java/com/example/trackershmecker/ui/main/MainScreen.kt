@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.trackershmecker.ui.main.components.ActivityButtonBar
@@ -125,17 +126,10 @@ fun MainScreen(
                             viewModel.onDaySelected(date)
                         },
                     )
-                    // Show streak line under the active month (only for current real month)
-                    if (month == state.activeMonth && month == YearMonth.from(state.today)) {
-                        StreakLine(
-                            streakCount = state.streakCount,
-                            last10Active = state.last10Active,
-                        )
-                    }
                 }
-                // Bottom spacer so content doesn't hide behind buttons
+                // Bottom spacer so content doesn't hide behind buttons + streak line
                 item {
-                    Spacer(modifier = Modifier.height(120.dp))
+                    Spacer(modifier = Modifier.height(170.dp))
                 }
             }
         }
@@ -178,14 +172,30 @@ fun MainScreen(
                 ),
         )
 
-        // Fixed activity buttons
-        ActivityButtonBar(
-            counts = state.monthCounts,
-            onActivityClick = { viewModel.onActivityLogged(it) },
+        // Fixed activity buttons with streak line
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 24.dp)
-                .navigationBarsPadding(),
-        )
+                .navigationBarsPadding()
+                .padding(horizontal = 8.dp)
+                .background(
+                    Color(0x337B1FA2),
+                    RoundedCornerShape(20.dp),
+                )
+                .padding(vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            if (state.activeMonth == YearMonth.from(state.today)) {
+                StreakLine(
+                    streakCount = state.streakCount,
+                    last10Active = state.last10Active,
+                )
+            }
+            ActivityButtonBar(
+                counts = state.monthCounts,
+                onActivityClick = { viewModel.onActivityLogged(it) },
+            )
+        }
     }
 }

@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ActivityButtonBar(
     counts: Map<ActivityType, Int>,
+    selectedActivity: ActivityType? = null,
     onActivityClick: (ActivityType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -42,6 +43,7 @@ fun ActivityButtonBar(
         ActivityType.entries.forEach { activity ->
             val scale = remember { Animatable(1f) }
             val scope = rememberCoroutineScope()
+            val isSelected = activity == selectedActivity
 
             Column(
                 modifier = Modifier
@@ -49,7 +51,11 @@ fun ActivityButtonBar(
                     .height(88.dp)
                     .graphicsLayer(scaleX = scale.value, scaleY = scale.value)
                     .background(activity.buttonBg, RoundedCornerShape(16.dp))
-                    .border(1.dp, activity.buttonBorder, RoundedCornerShape(16.dp))
+                    .border(
+                        width = if (isSelected) 3.dp else 1.dp,
+                        color = if (isSelected) activity.cellColor else activity.buttonBorder,
+                        shape = RoundedCornerShape(16.dp),
+                    )
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,

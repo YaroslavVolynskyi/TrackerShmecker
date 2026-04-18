@@ -8,16 +8,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.ui.theme.Background
 import com.example.trackershmecker.ui.theme.TextMuted
+import com.example.trackershmecker.ui.theme.TextPrimary
 import com.example.trackershmecker.ui.theme.TextSecondary
 
 @Composable
@@ -36,17 +40,22 @@ fun CalendarHeader(
     ) {
         Text(
             text = year.toString(),
-            fontSize = 13.sp,
-            color = TextMuted,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextPrimary,
             letterSpacing = 0.5.sp,
             modifier = Modifier.clickable { onYearTap(year) },
         )
         Row(
+            modifier = Modifier
+                .background(Color(0x557B1FA2), RoundedCornerShape(12.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ActivityType.entries.forEach { activity ->
-                Row(
+                val count = yearTotals[activity] ?: 0
+                if (count > 0 || activity == ActivityType.GYM) Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(3.dp),
                 ) {

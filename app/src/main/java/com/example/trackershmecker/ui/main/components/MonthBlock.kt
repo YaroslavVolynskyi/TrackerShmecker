@@ -1,6 +1,7 @@
 package com.example.trackershmecker.ui.main.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,8 +22,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.data.model.DayEntry
 import com.example.trackershmecker.ui.theme.TextMuted
+import com.example.trackershmecker.ui.theme.TextSecondary
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -62,10 +69,20 @@ fun MonthBlock(
             .alpha(alpha)
             .padding(vertical = 16.dp),
     ) {
-        // Month title
+        // Month title with activity counts
+        val monthCounts = entries.values
+            .filter { YearMonth.from(it.date) == yearMonth && it.activityType != null }
+            .groupingBy { it.activityType!! }
+            .eachCount()
         Row(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .background(
+                    if (yearMonth.monthValue == 1) Color(0x557B1FA2) else Color(0x337B1FA2),
+                    RoundedCornerShape(12.dp),
+                )
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
@@ -81,6 +98,32 @@ fun MonthBlock(
                     color = TextMuted,
                     letterSpacing = 0.5.sp,
                 )
+            }
+            ActivityType.entries.forEach { activity ->
+                val count = monthCounts[activity] ?: 0
+                if (count > 0 || activity == ActivityType.GYM) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(activity.cellColor, CircleShape),
+                        )
+                        Text(
+                            text = activity.label,
+                            fontSize = 10.5.sp,
+                            color = TextMuted,
+                        )
+                        Text(
+                            text = count.toString(),
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextSecondary,
+                        )
+                    }
+                }
             }
         }
 

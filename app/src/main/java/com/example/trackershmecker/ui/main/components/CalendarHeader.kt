@@ -44,7 +44,10 @@ fun CalendarHeader(
             fontWeight = FontWeight.SemiBold,
             color = TextPrimary,
             letterSpacing = 0.5.sp,
-            modifier = Modifier.clickable { onYearTap(year) },
+            modifier = Modifier
+                .background(Color(0x557B1FA2), RoundedCornerShape(12.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .clickable { onYearTap(year) },
         )
         Row(
             modifier = Modifier
@@ -66,12 +69,12 @@ fun CalendarHeader(
                     )
                     Text(
                         text = activity.label,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         color = TextPrimary,
                     )
                     Text(
                         text = (yearTotals[activity] ?: 0).toString(),
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextSecondary,
                     )

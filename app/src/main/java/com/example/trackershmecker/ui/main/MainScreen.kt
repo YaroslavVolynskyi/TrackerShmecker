@@ -1,13 +1,20 @@
 package com.example.trackershmecker.ui.main
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +30,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -158,7 +166,7 @@ fun MainScreen(
 
         // Day note card overlay
         AnimatedVisibility(
-            visible = state.selectedDate != null,
+            visible = state.showNoteCard && state.selectedDate != null,
             enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
             modifier = Modifier
@@ -173,7 +181,7 @@ fun MainScreen(
                     activityTypes = entry?.activityTypes ?: emptyList(),
                     existingNote = entry?.note,
                     onSaveNote = { note -> viewModel.onNoteUpdated(date, note) },
-                    onDismiss = { viewModel.onDaySelected(null) },
+                    onDismiss = { viewModel.onDismissNoteCard() },
                 )
             }
         }
@@ -225,7 +233,7 @@ fun MainScreen(
                 ),
         )
 
-        // Fixed activity buttons with streak line
+        // Fixed bottom bar with purple background
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -237,22 +245,109 @@ fun MainScreen(
                 .padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (state.activeMonth == YearMonth.from(state.today)) {
-                StreakLine(
-                    streakCount = state.streakCount,
-                    last10Active = state.last10Active,
+            AnimatedContent(
+                targetState = state.bottomBarMode,
+                transitionSpec = {
+                    (fadeIn(tween(250)) + slideInVertically(tween(300)) { it / 3 })
+                        .togetherWith(fadeOut(tween(200)))
+                        .using(SizeTransform(clip = false, sizeAnimationSpec = { _, _ -> tween(300) }))
+                },
+                label = "bottomBarContent",
+            ) { mode ->
+                when (mode) {
+                    BottomBarMode.DEFAULT -> {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (state.activeMonth == YearMonth.from(state.today)) {
+                                StreakLine(
+                                    streakCount = state.streakCount,
+                                    last10Active = state.last10Active,
+                                )
+                            }
+                            val todayActivities = state.entries[state.today]?.activityTypes
+                                ?.toSet()
+                                ?.ifEmpty { setOf(ActivityType.DAY_OFF) }
+                                ?: setOf(ActivityType.DAY_OFF)
+                            ActivityButtonBar(
+                                counts = state.monthCounts,
+                                selectedActivities = todayActivities,
+                                onActivityClick = { viewModel.onActivityLogged(it) },
+                                onActivityLongClick = { viewModel.onActivityAdded(it) },
+                            )
+                        }
+                    }
+                    BottomBarMode.DATE_OPTIONS -> {
+                        DateOptionsBar(
+                            onAddNote = { viewModel.onAddNoteClicked() },
+                            onLogActivity = { viewModel.onLogActivityClicked() },
+                        )
+                    }
+                    BottomBarMode.LOG_ACTIVITY -> {
+                        val selectedActivities = state.selectedDate?.let { date ->
+                            state.entries[date]?.activityTypes
+                                ?.toSet()
+                                ?.ifEmpty { setOf(ActivityType.DAY_OFF) }
+                        } ?: setOf(ActivityType.DAY_OFF)
+                        ActivityButtonBar(
+                            counts = state.monthCounts,
+                            selectedActivities = selectedActivities,
+                            onActivityClick = { viewModel.onActivityLoggedForDate(it) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DateOptionsBar(
+    onAddNote: () -> Unit,
+    onLogActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(88.dp)
+                .background(Color(0xFFF3E5F9), RoundedCornerShape(16.dp))
+                .border(1.dp, Color(0xFFCE93D8), RoundedCornerShape(16.dp))
+                .clickable { onAddNote() },
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "\uD83D\uDCDD", fontSize = 22.sp)
+                Text(
+                    text = "Add note",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF6A1B9A),
                 )
             }
-            val todayActivities = state.entries[state.today]?.activityTypes
-                ?.toSet()
-                ?.ifEmpty { setOf(ActivityType.DAY_OFF) }
-                ?: setOf(ActivityType.DAY_OFF)
-            ActivityButtonBar(
-                counts = state.monthCounts,
-                selectedActivities = todayActivities,
-                onActivityClick = { viewModel.onActivityLogged(it) },
-                onActivityLongClick = { viewModel.onActivityAdded(it) },
-            )
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(88.dp)
+                .background(Color(0xFFE8F5E9), RoundedCornerShape(16.dp))
+                .border(1.dp, Color(0xFF81C784), RoundedCornerShape(16.dp))
+                .clickable { onLogActivity() },
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "\uD83C\uDFCB\uFE0F", fontSize = 22.sp)
+                Text(
+                    text = "Log activity",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF2E7D32),
+                )
+            }
         }
     }
 }

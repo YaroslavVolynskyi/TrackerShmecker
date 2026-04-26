@@ -70,7 +70,46 @@ class MainViewModel @Inject constructor(
     }
 
     fun onDaySelected(date: LocalDate?) {
-        _uiState.update { it.copy(selectedDate = if (it.selectedDate == date) null else date) }
+        val current = _uiState.value.selectedDate
+        if (date == null || date == current) {
+            _uiState.update {
+                it.copy(
+                    selectedDate = null,
+                    bottomBarMode = BottomBarMode.DEFAULT,
+                    showNoteCard = false,
+                )
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    selectedDate = date,
+                    bottomBarMode = BottomBarMode.DATE_OPTIONS,
+                    showNoteCard = false,
+                )
+            }
+        }
+    }
+
+    fun onAddNoteClicked() {
+        _uiState.update { it.copy(showNoteCard = true) }
+    }
+
+    fun onLogActivityClicked() {
+        _uiState.update { it.copy(bottomBarMode = BottomBarMode.LOG_ACTIVITY) }
+    }
+
+    fun onActivityLoggedForDate(type: ActivityType) {
+        val date = _uiState.value.selectedDate ?: return
+        viewModelScope.launch {
+            repository.logActivity(date, type)
+        }
+        _uiState.update {
+            it.copy(
+                selectedDate = null,
+                bottomBarMode = BottomBarMode.DEFAULT,
+                showNoteCard = false,
+            )
+        }
     }
 
     fun onActivityLogged(type: ActivityType) {
@@ -89,6 +128,12 @@ class MainViewModel @Inject constructor(
     fun onNoteUpdated(date: LocalDate, note: String) {
         viewModelScope.launch {
             repository.updateNote(date, note)
+        }
+    }
+
+    fun onDismissNoteCard() {
+        _uiState.update {
+            it.copy(showNoteCard = false)
         }
     }
 

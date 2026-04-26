@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.data.model.DayEntry
 import com.example.trackershmecker.data.repository.FitnessRepository
+import com.example.trackershmecker.data.repository.SyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: FitnessRepository,
+    private val syncRepository: SyncRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -27,6 +29,10 @@ class MainViewModel @Inject constructor(
         val today = LocalDate.now()
         val months = buildMonthList(YearMonth.of(2024, 1), YearMonth.from(today))
         _uiState.update { it.copy(months = months, today = today, activeMonth = YearMonth.from(today)) }
+
+        viewModelScope.launch {
+            syncRepository.syncFromRemote()
+        }
 
         viewModelScope.launch {
             var seededToday = false

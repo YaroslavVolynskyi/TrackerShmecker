@@ -10,6 +10,9 @@ interface DayEntryDao {
     @Query("SELECT * FROM day_entries")
     fun observeAll(): Flow<List<DayEntryEntity>>
 
+    @Query("SELECT * FROM day_entries")
+    suspend fun getAll(): List<DayEntryEntity>
+
     @Query("SELECT * FROM day_entries WHERE date = :date")
     suspend fun getByDate(date: String): DayEntryEntity?
 

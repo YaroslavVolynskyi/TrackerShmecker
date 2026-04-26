@@ -4,6 +4,7 @@ import com.example.trackershmecker.data.local.DayEntryDao
 import com.example.trackershmecker.data.local.DayEntryEntity
 import com.example.trackershmecker.data.model.ActivityType
 import com.example.trackershmecker.data.model.DayEntry
+import com.example.trackershmecker.data.remote.RemoteDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -11,6 +12,7 @@ import javax.inject.Inject
 
 class RoomFitnessRepository @Inject constructor(
     private val dao: DayEntryDao,
+    private val remoteDataSource: RemoteDataSource,
 ) : FitnessRepository {
 
     override fun getEntries(): Flow<Map<LocalDate, DayEntry>> {
@@ -28,13 +30,13 @@ class RoomFitnessRepository @Inject constructor(
 
     override suspend fun logActivity(date: LocalDate, type: ActivityType) {
         val existing = dao.getByDate(date.toString())
-        dao.upsert(
-            DayEntryEntity(
-                date = date.toString(),
-                activityType = type.name,
-                note = existing?.note,
-            )
+        val entry = DayEntryEntity(
+            date = date.toString(),
+            activityType = type.name,
+            note = existing?.note,
         )
+        dao.upsert(entry)
+        pushEntryToRemote(entry)
     }
 
     override suspend fun addActivity(date: LocalDate, type: ActivityType) {
@@ -48,25 +50,33 @@ class RoomFitnessRepository @Inject constructor(
         } else {
             currentTypes.add(type.name)
         }
-        dao.upsert(
-            DayEntryEntity(
-                date = date.toString(),
-                activityType = currentTypes.joinToString(",").ifEmpty { null },
-                note = existing?.note,
-            )
+        val entry = DayEntryEntity(
+            date = date.toString(),
+            activityType = currentTypes.joinToString(",").ifEmpty { null },
+            note = existing?.note,
         )
+        dao.upsert(entry)
+        pushEntryToRemote(entry)
     }
 
     override suspend fun updateNote(date: LocalDate, note: String) {
         val existing = dao.getByDate(date.toString())
         val cleanNote = note.ifBlank { null }
-        dao.upsert(
-            DayEntryEntity(
-                date = date.toString(),
-                activityType = existing?.activityType,
-                note = cleanNote,
-            )
+        val entry = DayEntryEntity(
+            date = date.toString(),
+            activityType = existing?.activityType,
+            note = cleanNote,
         )
+        dao.upsert(entry)
+        pushEntryToRemote(entry)
+    }
+
+    private suspend fun pushEntryToRemote(entry: DayEntryEntity) {
+        try {
+            remoteDataSource.uploadEntry(entry)
+        } catch (e: Exception) {
+            android.util.Log.e("RoomFitnessRepo", "Failed to push entry to remote", e)
+        }
     }
 
     override suspend fun getYearTotals(year: Int): Map<ActivityType, Int> {

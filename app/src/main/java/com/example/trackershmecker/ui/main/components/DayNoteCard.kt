@@ -1,10 +1,5 @@
 package com.example.trackershmecker.ui.main.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,8 +16,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,8 +25,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackershmecker.data.model.ActivityType
@@ -42,17 +41,27 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+private val DarkPurple = Color(0xFF5E35B1)
+
 @Composable
 fun DayNoteCard(
     date: LocalDate,
     activityTypes: List<ActivityType>,
     existingNote: String?,
     onSaveNote: (String) -> Unit,
+    onDeleteNote: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var isEditing by remember(date) { mutableStateOf(false) }
-    var draft by remember(date) { mutableStateOf(existingNote ?: "") }
+    val initialText = existingNote ?: ""
+    var draft by remember(date) {
+        mutableStateOf(TextFieldValue(initialText, TextRange(initialText.length)))
+    }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(date) {
+        focusRequester.requestFocus()
+    }
 
     Box(
         modifier = modifier
@@ -104,88 +113,58 @@ fun DayNoteCard(
                 )
             }
 
-            // Note content
-            if (isEditing) {
+            // Note editor
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                BasicTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .padding(vertical = 6.dp),
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontSize = 14.sp,
+                        color = TextPrimary,
+                    ),
+                    decorationBox = { inner ->
+                        Column {
+                            inner()
+                            HorizontalDivider(color = Divider)
+                        }
+                    },
+                )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 ) {
-                    BasicTextField(
-                        value = draft,
-                        onValueChange = { draft = it },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(vertical = 6.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(
-                            fontSize = 14.sp,
-                            color = TextPrimary,
-                        ),
-                        decorationBox = { inner ->
-                            Column {
-                                if (draft.isEmpty()) {
-                                    Text(
-                                        text = "e.g. 80 kg, felt strong",
-                                        fontSize = 14.sp,
-                                        color = TextMuted,
-                                    )
-                                }
-                                inner()
-                                HorizontalDivider(color = Divider)
-                            }
-                        },
-                    )
+                    if (existingNote != null) {
+                        Button(
+                            onClick = { onDeleteNote() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = DarkPurple,
+                                contentColor = Color.White,
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                        ) {
+                            Text("Delete", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
                     Button(
-                        onClick = {
-                            onSaveNote(draft)
-                            isEditing = false
-                        },
+                        onClick = { onSaveNote(draft.text) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = TextPrimary,
+                            containerColor = DarkPurple,
                             contentColor = Color.White,
                         ),
                         shape = RoundedCornerShape(8.dp),
                     ) {
                         Text("Save", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
-                }
-            } else if (existingNote != null) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .clickable {
-                            draft = existingNote
-                            isEditing = true
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(text = "\uD83D\uDCDD", fontSize = 12.sp)
-                    Text(text = existingNote, fontSize = 14.sp, color = TextPrimary)
-                    Text(
-                        text = "Tap to edit",
-                        fontSize = 11.sp,
-                        color = TextMuted,
-                        modifier = Modifier.weight(1f),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
-                    )
-                }
-            } else {
-                TextButton(
-                    onClick = {
-                        draft = ""
-                        isEditing = true
-                    },
-                    modifier = Modifier.padding(top = 4.dp),
-                ) {
-                    Text(
-                        text = "+ Add note",
-                        fontSize = 13.sp,
-                        color = TextMuted,
-                    )
                 }
             }
         }

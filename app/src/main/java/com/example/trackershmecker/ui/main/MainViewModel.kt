@@ -129,11 +129,35 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             repository.updateNote(date, note)
         }
+        _uiState.update {
+            it.copy(
+                selectedDate = null,
+                bottomBarMode = BottomBarMode.DEFAULT,
+                showNoteCard = false,
+            )
+        }
+    }
+
+    fun onDeleteNote(date: LocalDate) {
+        viewModelScope.launch {
+            repository.updateNote(date, "")
+        }
+        _uiState.update {
+            it.copy(
+                selectedDate = null,
+                bottomBarMode = BottomBarMode.DEFAULT,
+                showNoteCard = false,
+            )
+        }
     }
 
     fun onDismissNoteCard() {
         _uiState.update {
-            it.copy(showNoteCard = false)
+            it.copy(
+                selectedDate = null,
+                bottomBarMode = BottomBarMode.DEFAULT,
+                showNoteCard = false,
+            )
         }
     }
 

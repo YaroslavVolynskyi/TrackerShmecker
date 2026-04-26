@@ -150,7 +150,7 @@ fun MonthBlock(
                             DayCell(
                                 day = day,
                                 activityTypes = entry?.activityTypes ?: emptyList(),
-                                isToday = date == today,
+                                isToday = date == today && (selectedDate == null || selectedDate == today),
                                 isSelected = date == selectedDate,
                                 hasNote = entry?.note != null,
                                 isActive = isActive,

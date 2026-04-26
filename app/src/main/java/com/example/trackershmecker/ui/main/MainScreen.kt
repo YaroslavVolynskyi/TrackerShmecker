@@ -171,7 +171,7 @@ fun MainScreen(
             exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 180.dp)
+                .padding(bottom = 220.dp)
                 .navigationBarsPadding(),
         ) {
             state.selectedDate?.let { date ->
@@ -181,6 +181,7 @@ fun MainScreen(
                     activityTypes = entry?.activityTypes ?: emptyList(),
                     existingNote = entry?.note,
                     onSaveNote = { note -> viewModel.onNoteUpdated(date, note) },
+                    onDeleteNote = { viewModel.onDeleteNote(date) },
                     onDismiss = { viewModel.onDismissNoteCard() },
                 )
             }
@@ -276,7 +277,9 @@ fun MainScreen(
                         }
                     }
                     BottomBarMode.DATE_OPTIONS -> {
+                        val hasNote = state.selectedDate?.let { state.entries[it]?.note } != null
                         DateOptionsBar(
+                            hasNote = hasNote,
                             onAddNote = { viewModel.onAddNoteClicked() },
                             onLogActivity = { viewModel.onLogActivityClicked() },
                         )
@@ -301,6 +304,7 @@ fun MainScreen(
 
 @Composable
 private fun DateOptionsBar(
+    hasNote: Boolean,
     onAddNote: () -> Unit,
     onLogActivity: () -> Unit,
     modifier: Modifier = Modifier,
@@ -323,7 +327,7 @@ private fun DateOptionsBar(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "\uD83D\uDCDD", fontSize = 22.sp)
                 Text(
-                    text = "Add note",
+                    text = if (hasNote) "Edit note" else "Add note",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF6A1B9A),
